@@ -85,7 +85,7 @@ public class OptimalScheduler implements IScheduler {
             types = "unType";
             } 
             else {
-                types = metadata.get("type");
+                types = metadata.get("types");
                 logger.info("We have extracted type: "+types);
                 if (types == null) {
                     types = "unType";
