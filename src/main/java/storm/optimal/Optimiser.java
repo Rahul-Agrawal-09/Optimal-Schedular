@@ -166,13 +166,16 @@ public class Optimiser {
         // cs2-ubuntu=> node1
         // provienance => node2
         // Components => spout, bolt, publisher, database, __acker
+
+        // wordGenerator, counter, aggregator, intermediateRanker, finalRanker, __acker
         componentsByType.put("node1", new ArrayList<String>());
         componentsByType.put("node2", new ArrayList<String>());
-        componentsByType.get("node1").add("spout");
-        componentsByType.get("node1").add("publisher");
-        componentsByType.get("node1").add("__acker");
-        componentsByType.get("node2").add("bolt");
-        componentsByType.get("node2").add("database");
+        componentsByType.get("node1").add("wordGenerator");
+        componentsByType.get("node1").add("aggregator");
+        componentsByType.get("node1").add("finalRanker");
+        componentsByType.get("node2").add("__acker");
+        componentsByType.get("node2").add("counter");
+        componentsByType.get("node2").add("intermediateRanker");
     }
 
 
