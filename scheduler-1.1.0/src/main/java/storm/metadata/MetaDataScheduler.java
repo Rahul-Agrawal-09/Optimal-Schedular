@@ -1,4 +1,4 @@
-package storm.matadata;
+package storm.metadata;
 
 import java.util.HashMap;
 import java.util.Map;
