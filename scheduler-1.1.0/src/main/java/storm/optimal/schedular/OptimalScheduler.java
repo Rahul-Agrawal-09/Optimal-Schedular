@@ -21,7 +21,7 @@ import org.json.simple.JSONObject;
 
 public class OptimalScheduler implements IScheduler {
 //    private static final Logger LOG = LoggerFactory.getLogger(CustomScheduler.class);
-    private static Logger logger = Logger.getLogger("CustomScheduler");
+    // private static Logger logger = Logger.getLogger("CustomScheduler");
     // logger.info     => for loging info
     // logger.severe   => for error (catched)
     // logger.fine     => mostly used (checked conditions) 
@@ -29,7 +29,7 @@ public class OptimalScheduler implements IScheduler {
 
     @Override
     public void prepare(@SuppressWarnings("rawtypes") Map conf) {
-    logger.info("Starting Custome Schedular.... (prepare function)");
+    // logger.info("Starting Custome Schedular.... (prepare function)");
     }
 
 
@@ -41,11 +41,11 @@ public class OptimalScheduler implements IScheduler {
 
     @Override
     public void schedule(Topologies topologies, Cluster cluster) {
-    logger.info("Rerunning scheduling...");
+    // logger.info("Rerunning scheduling...");
     // Optimiser opt=new optimiser(topology, cluster);
     // map<WorkerSlot, ArrayList<ExecutorDetails>> mapping=opt.optimises();
     scheduleHelper(topologies, cluster);
-    logger.info("Scheduling done...");
+    // logger.info("Scheduling done...");
     }
 
     

@@ -16,8 +16,10 @@ import org.apache.storm.generated.*;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.JSONObject;
 
+import java.io.File;
+
 public class Optimiser {
-    private static Logger logger = Logger.getLogger("Optimiser");
+    // private static Logger logger = Logger.getLogger("Optimiser");
     Map<String, SupervisorDetails> supervisorsByName;
     private Topologies topologies;
     private Cluster cluster;
@@ -28,9 +30,9 @@ public class Optimiser {
         Collection<SupervisorDetails> supervisorDetails = cluster.getSupervisors().values();
         
         // Get the map of name and supervisors.
-        logger.info("Got supervisor details."+supervisorDetails.toString());
+        // logger.info("Got supervisor details."+supervisorDetails.toString());
         this.supervisorsByName = getSupervisorsByName(supervisorDetails);
-        logger.info("Got supervisor by type. (getOptimalManualSchedule)");
+        // logger.info("Got supervisor by type. (getOptimalManualSchedule)");
     }
 
     public void getOptimalSchedule(Map<WorkerSlot,ArrayList<ExecutorDetails>> optimalMapping){
@@ -38,12 +40,12 @@ public class Optimiser {
     }
 
     private void getOptimalManualSchedule(Map<WorkerSlot,ArrayList<ExecutorDetails>> optimalMapping){
-        logger.info("Scheduling the topology. (getOptimalManualSchedule)");
+        // logger.info("Scheduling the topology. (getOptimalManualSchedule)");
         
         for (TopologyDetails topologyDetails : cluster.needsSchedulingTopologies()) {
             StormTopology stormTopology = topologyDetails.getTopology();
             String topologyID = topologyDetails.getId();
-            logger.info("Topology ID: "+topologyID);
+            // logger.info("Topology ID: "+topologyID);
             // Get components from topology
             Map<String, Bolt> bolts = stormTopology.get_bolts();
             Map<String, SpoutSpec> spouts = stormTopology.get_spouts();
@@ -63,17 +65,17 @@ public class Optimiser {
             //     logger.info(i+" "+" "+componentsByName.get(i).size()+componentsByName.get(i).toString());
             
             populateComponentsByName(componentsByName, executorsByComponent);
-            for(String i:componentsByName.keySet())
-                logger.info(i+" "+" "+componentsByName.get(i).size()+componentsByName.get(i).toString());
+            // for(String i:componentsByName.keySet())
+                // logger.info(i+" "+" "+componentsByName.get(i).size()+componentsByName.get(i).toString());
 
             // Get a map of type to executors
             Map<String, ArrayList<ExecutorDetails>>
             executorsToBeScheduledByName = getExecutorsToBeScheduledByName(
             cluster, topologyDetails, componentsByName
             );
-            logger.info("Executors To Be Scheduled By Type.");
-            for(String i:executorsToBeScheduledByName.keySet())
-                logger.info(i+" "+" "+executorsToBeScheduledByName.get(i).size()+executorsToBeScheduledByName.get(i).toString());
+            // logger.info("Executors To Be Scheduled By Type.");
+            // for(String i:executorsToBeScheduledByName.keySet())
+                // logger.info(i+" "+" "+executorsToBeScheduledByName.get(i).size()+executorsToBeScheduledByName.get(i).toString());
 
             // Initialise a map of slot -> executors
             Map<WorkerSlot, ArrayList<ExecutorDetails>>
@@ -82,7 +84,7 @@ public class Optimiser {
             );
 
             // Time to match everything up!
-            logger.info("Matching Started");
+            // logger.info("Matching Started");
 
             // NO TESTING IS DONE=> TODO Handle corner cases 
             for (Map.Entry<String, ArrayList<ExecutorDetails>> entry :
@@ -101,7 +103,7 @@ public class Optimiser {
                     executorsForName, componentsForName, type
                     );
                 } catch (Exception e) {
-                    logger.info("Exception in populateComponentExecutorsToSlotsMap.");
+                    // logger.info("Exception in populateComponentExecutorsToSlotsMap.");
                     e.printStackTrace();
                     // Cut this scheduling short to avoid partial scheduling.
                     return;
@@ -112,7 +114,7 @@ public class Optimiser {
             // We do this as a separate step to only perform any assigning if there have been no issues so far.
             // That's aimed at avoiding partial scheduling from occurring, with some components already scheduled
             // and alive, while others cannot be scheduled.
-            logger.info("Started Actual Assignment.");
+            // logger.info("Started Actual Assignment.");
             for (Map.Entry<WorkerSlot, ArrayList<ExecutorDetails>> entry :
             componentExecutorsToSlotsMap.entrySet()) {
                 WorkerSlot slotToAssign = entry.getKey();
@@ -120,7 +122,7 @@ public class Optimiser {
                 entry.getValue();
                 cluster.assign(slotToAssign, topologyID,
                 executorsToAssign);
-                logger.info("SLOT ASSIGNED: "+slotToAssign.getNodeId()+" "+executorsToAssign.size()+" "+executorsToAssign.toString());
+                // logger.info("SLOT ASSIGNED: "+slotToAssign.getNodeId()+" "+executorsToAssign.size()+" "+executorsToAssign.toString());
             }
             // If we've reached this far, then scheduling must have been successful
             cluster.setStatus(topologyID, "OPTIMAL SUCCESSFUL");
@@ -133,7 +135,7 @@ public class Optimiser {
         Collection<SupervisorDetails> supervisorDetails){
         // A map of type -> supervisors, to help with scheduling of components with specific types
         Map<String, SupervisorDetails> supervisorsByName = new HashMap<String, SupervisorDetails>();
-        logger.info("Calculating supervisor by Name. (get Supervisor By type)");
+        // logger.info("Calculating supervisor by Name. (get Supervisor By type)");
         Integer unnamedSupervisorCount=0;
         for (SupervisorDetails supervisor : supervisorDetails) {
             @SuppressWarnings("unchecked")
@@ -145,7 +147,7 @@ public class Optimiser {
             } 
             else {
                 name = metadata.get("name");
-                logger.info("We have extracted name: "+name);
+                // logger.info("We have extracted name: "+name);
                 if (name == null || supervisorsByName.containsKey(name)) {
                     name = "unnamed"+(unnamedSupervisorCount++);
                 }
@@ -153,9 +155,9 @@ public class Optimiser {
             // If duplicate names are given then convert the new supervisor to unname
             supervisorsByName.put(name, supervisor);
         }
-        logger.info("result of getSupervisorBy type");
-        for(String i:supervisorsByName.keySet())
-            logger.info(i+" "+supervisorsByName.get(i));
+        // logger.info("result of getSupervisorBy type");
+        // for(String i:supervisorsByName.keySet())
+            // logger.info(i+" "+supervisorsByName.get(i));
         return supervisorsByName;
     }
 
@@ -165,17 +167,76 @@ public class Optimiser {
         // Manually allocating components to optimal slot
         // cs2-ubuntu=> node1
         // provienance => node2
-        // Components => spout, bolt, publisher, database, __acker
+        // Components:
+        // spout                            =>0
+        // SenMLParseBoltPREDSYS            =>1
+        // DecisionTreeClassifyBolt         =>2
+        // LinearRegressionPredictorBolt    =>3
+        // BlockWindowAverageBolt           =>4
+        // ErrorEstimationBolt              =>5
+        // MQTTPublishBolt_Sink             =>6
 
-        // wordGenerator, counter, aggregator, intermediateRanker, finalRanker, __acker
-        componentsByType.put("node1", new ArrayList<String>());
-        componentsByType.put("node2", new ArrayList<String>());
-        componentsByType.get("node1").add("wordGenerator");
-        componentsByType.get("node1").add("aggregator");
-        componentsByType.get("node1").add("finalRanker");
-        componentsByType.get("node2").add("__acker");
-        componentsByType.get("node2").add("counter");
-        componentsByType.get("node2").add("intermediateRanker");
+        // String index=0;
+        // String[] component={"spout","SenMLParseBoltPREDSYS","DecisionTreeClassifyBolt",
+        //     "LinearRegressionPredictorBolt","BlockWindowAverageBolt","ErrorEstimationBolt",
+        //     "MQTTPublishBolt_Sink"};
+        // try{
+        //     File file_open=new File("/home/pi/topo_run_outdir/reg-SYS/com_index.txt");
+        //     Scanner sc = new Scanner(file_open);
+        //     index=Character.getNumericValue(sc.next().charAt(0));
+        // }
+        // catch(Exception e){
+        //     e.printStackTrace();
+        // }
+        // componentsByType.put("node1", new ArrayList<String>()); // leader
+        // componentsByType.put("node2", new ArrayList<String>()); // slave/tester 
+        // componentsByType.get("node2").add(component[index]);
+
+        // metadata
+        JSONParser parser = new JSONParser();
+        for (Map.Entry<String, List<ExecutorDetails>> componentEntry : components.entrySet()) {
+            JSONObject conf = null;
+            String componentID = componentEntry.getKey();
+            List<ExecutorDetails> component = componentEntry.getValue();
+            try {
+                // Get the component's conf irrespective of its type (via java reflection)
+                Method getCommonComponentMethod =
+                component.getClass().getMethod("get_common");
+                ComponentCommon commonComponent = (ComponentCommon)
+                getCommonComponentMethod.invoke(component);
+                conf = (JSONObject)
+                parser.parse(commonComponent.get_json_conf());
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+            String types;
+            // If there's no config, use a fake type to group all untypeged components
+            if (conf == null) {
+                types = "unnamed";
+            } else {
+                types = (String) conf.get("name");
+                // If there are no types, use a fake type to group all untypeged components
+                if (types == null) {
+                    types = "unnamed";
+                }
+            }
+            // If the component has types attached to it, handle it by populating the componentsByType map.
+            // Loop through each of the types to handle individually
+            for (String type : types.split(",")) {
+                type = type.trim();
+                if (componentsByType.containsKey(type)) {
+                    // If we've already seen this type, then just add the component to the existing ArrayList.
+                    componentsByType.get(type).add(componentID);
+                } else {
+                    // If this type is new, then create a new ArrayList,
+                    // add the current component, and populate the map's type entry with it.
+                    ArrayList<String> newComponentList = new
+                    ArrayList<String>();
+                    newComponentList.add(componentID);
+                    componentsByType.put(type, newComponentList);
+                }
+            }
+        }
     }
 
 

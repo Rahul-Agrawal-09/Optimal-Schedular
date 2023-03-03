@@ -17,7 +17,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.JSONObject;
 
 public class Optimiser {
-    private static Logger logger = Logger.getLogger("Optimiser");
+    // private static Logger logger = Logger.getLogger("Optimiser");
     Map<String, SupervisorDetails> supervisorsByName;
     private Topologies topologies;
     private Cluster cluster;
@@ -28,9 +28,9 @@ public class Optimiser {
         Collection<SupervisorDetails> supervisorDetails = cluster.getSupervisors().values();
         
         // Get the map of name and supervisors.
-        logger.info("Got supervisor details."+supervisorDetails.toString());
+        // logger.info("Got supervisor details."+supervisorDetails.toString());
         this.supervisorsByName = getSupervisorsByName(supervisorDetails);
-        logger.info("Got supervisor by type. (getOptimalManualSchedule)");
+        // logger.info("Got supervisor by type. (getOptimalManualSchedule)");
     }
 
     public void getOptimalSchedule(Map<WorkerSlot,ArrayList<ExecutorDetails>> optimalMapping){
@@ -38,12 +38,12 @@ public class Optimiser {
     }
 
     private void getOptimalManualSchedule(Map<WorkerSlot,ArrayList<ExecutorDetails>> optimalMapping){
-        logger.info("Scheduling the topology. (getOptimalManualSchedule)");
+        // logger.info("Scheduling the topology. (getOptimalManualSchedule)");
         
         for (TopologyDetails topologyDetails : cluster.needsSchedulingTopologies(topologies)) {
             StormTopology stormTopology = topologyDetails.getTopology();
             String topologyID = topologyDetails.getId();
-            logger.info("Topology ID: "+topologyID);
+            // logger.info("Topology ID: "+topologyID);
             // Get components from topology
             Map<String, Bolt> bolts = stormTopology.get_bolts();
             Map<String, SpoutSpec> spouts = stormTopology.get_spouts();
@@ -63,17 +63,17 @@ public class Optimiser {
             //     logger.info(i+" "+" "+componentsByName.get(i).size()+componentsByName.get(i).toString());
             
             populateComponentsByName(componentsByName, executorsByComponent);
-            for(String i:componentsByName.keySet())
-                logger.info(i+" "+" "+componentsByName.get(i).size()+componentsByName.get(i).toString());
+            // for(String i:componentsByName.keySet())
+            //     logger.info(i+" "+" "+componentsByName.get(i).size()+componentsByName.get(i).toString());
 
             // Get a map of type to executors
             Map<String, ArrayList<ExecutorDetails>>
             executorsToBeScheduledByName = getExecutorsToBeScheduledByName(
             cluster, topologyDetails, componentsByName
             );
-            logger.info("Executors To Be Scheduled By Type.");
-            for(String i:executorsToBeScheduledByName.keySet())
-                logger.info(i+" "+" "+executorsToBeScheduledByName.get(i).size()+executorsToBeScheduledByName.get(i).toString());
+            // logger.info("Executors To Be Scheduled By Type.");
+            // for(String i:executorsToBeScheduledByName.keySet())
+                // logger.info(i+" "+" "+executorsToBeScheduledByName.get(i).size()+executorsToBeScheduledByName.get(i).toString());
 
             // Initialise a map of slot -> executors
             Map<WorkerSlot, ArrayList<ExecutorDetails>>
@@ -82,7 +82,7 @@ public class Optimiser {
             );
 
             // Time to match everything up!
-            logger.info("Matching Started");
+            // logger.info("Matching Started");
 
             // NO TESTING IS DONE=> TODO Handle corner cases 
             for (Map.Entry<String, ArrayList<ExecutorDetails>> entry :
@@ -101,7 +101,7 @@ public class Optimiser {
                     executorsForName, componentsForName, type
                     );
                 } catch (Exception e) {
-                    logger.info("Exception in populateComponentExecutorsToSlotsMap.");
+                    // logger.info("Exception in populateComponentExecutorsToSlotsMap.");
                     e.printStackTrace();
                     // Cut this scheduling short to avoid partial scheduling.
                     return;
@@ -112,7 +112,7 @@ public class Optimiser {
             // We do this as a separate step to only perform any assigning if there have been no issues so far.
             // That's aimed at avoiding partial scheduling from occurring, with some components already scheduled
             // and alive, while others cannot be scheduled.
-            logger.info("Started Actual Assignment.");
+            // logger.info("Started Actual Assignment.");
             for (Map.Entry<WorkerSlot, ArrayList<ExecutorDetails>> entry :
             componentExecutorsToSlotsMap.entrySet()) {
                 WorkerSlot slotToAssign = entry.getKey();
@@ -120,7 +120,7 @@ public class Optimiser {
                 entry.getValue();
                 cluster.assign(slotToAssign, topologyID,
                 executorsToAssign);
-                logger.info("SLOT ASSIGNED: "+slotToAssign.getNodeId()+" "+executorsToAssign.size()+" "+executorsToAssign.toString());
+                // logger.info("SLOT ASSIGNED: "+slotToAssign.getNodeId()+" "+executorsToAssign.size()+" "+executorsToAssign.toString());
             }
             // If we've reached this far, then scheduling must have been successful
             cluster.setStatus(topologyID, "OPTIMAL SUCCESSFUL");
@@ -133,7 +133,7 @@ public class Optimiser {
         Collection<SupervisorDetails> supervisorDetails){
         // A map of type -> supervisors, to help with scheduling of components with specific types
         Map<String, SupervisorDetails> supervisorsByName = new HashMap<String, SupervisorDetails>();
-        logger.info("Calculating supervisor by Name. (get Supervisor By type)");
+        // logger.info("Calculating supervisor by Name. (get Supervisor By type)");
         Integer unnamedSupervisorCount=0;
         for (SupervisorDetails supervisor : supervisorDetails) {
             @SuppressWarnings("unchecked")
@@ -145,7 +145,7 @@ public class Optimiser {
             } 
             else {
                 name = metadata.get("name");
-                logger.info("We have extracted name: "+name);
+                // logger.info("We have extracted name: "+name);
                 if (name == null || supervisorsByName.containsKey(name)) {
                     name = "unnamed"+(unnamedSupervisorCount++);
                 }
@@ -153,9 +153,9 @@ public class Optimiser {
             // If duplicate names are given then convert the new supervisor to unname
             supervisorsByName.put(name, supervisor);
         }
-        logger.info("result of getSupervisorBy type");
-        for(String i:supervisorsByName.keySet())
-            logger.info(i+" "+supervisorsByName.get(i));
+        // logger.info("result of getSupervisorBy type");
+        // for(String i:supervisorsByName.keySet())
+        //     logger.info(i+" "+supervisorsByName.get(i));
         return supervisorsByName;
     }
 

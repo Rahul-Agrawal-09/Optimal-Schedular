@@ -29,7 +29,7 @@ $ cp target/autoscale-2.0.0-SNAPSHOT-jar-with-dependencies.jar $STORM_HOME/lib
 
 ### How to use schedulers in Apache Storm
 Add following line in storm.yaml file
-```sh
+```yaml
 # for OptimalScheduler
 storm.scheduler:
    "storm.optimal.schedular.OptimalScheduler"
